@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 ALSENET SA
+* Copyright (c) 2018-2019 ALSENET SA
 *
 * Author(s):
 *
@@ -24,9 +24,8 @@ var gulp = require('gulp');
 var sass = require('gulp-sass');
 var browserSync = require('browser-sync');
 var gutil = require('gulp-util');
-var runSequence = require('run-sequence');
-var merge = require('merge-stream');
 var rename = require('gulp-rename');
+var merge = require('merge-stream');
 var fs = require('fs');
 
 gulp.task('browserSync',function(){
@@ -62,78 +61,6 @@ gulp.task('sass', function () {
     .pipe(gulp.dest('./client/app/css/'));
 });
 
-gulp.task('browserify', ['scripts'], require('./gulptasks/browserify.js')());
-
-gulp.task('browserify-ugly', ['scripts'], require('./gulptasks/browserify.js')({
-  uglify: true
-}));
-
-gulp.task('watchify', ['scripts'], require('./gulptasks/browserify.js')({
-  watch: true
-}));
-
-gulp.task('watch', function(){
-      return gulp.watch("./client/app/sass/**.scss", ['sass']);
-//      gulp.watch(["./client/app/index.html",'./client/app/views/**.html']).on ('change',browserSync.reload);
-});
-
-function callback(err,msg){
-  if(err) throw err;
-}
-
-gulp.task('run', function() {
-  return runSequence(
-    'copy',
-    'sass',
-    'watch',
-    'watchify',
-    'browserSync'
-
-  );
-});
-
-gulp.task('default',['run']);
-
-gulp.task('build', function(callback){
-  runSequence(
-    'copy',
-    'sass',
-    'browserify',
-    'dist',
-    function(err){
-      if (err) console.log(err.message);
-      callback(err);
-    }
-  );
-});
-
-gulp.task('build-ugly', function(callback){
-  runSequence(
-    'copy',
-    'sass',
-    'browserify-ugly',
-    'dist',
-    function(err){
-      if (err) console.log(err.message);
-      callback(err);
-    }
-  );
-});
-
-gulp.task('dist', function(){
-   var streams=[];
-   streams.push(gulp.src('./client/app/index.html')
-   .pipe(gulp.dest('./dist/')));
-   streams.push(gulp.src('./client/app/views/*')
-   .pipe(gulp.dest('./dist/views/')));
-   streams.push(gulp.src('./client/app/js/index.min.*')
-   .pipe(gulp.dest('./dist/js/')));
-   streams.push(gulp.src('./client/app/css/bundle.*')
-   .pipe(gulp.dest('./dist/css/')));
-   return merge.apply(null,streams);
-
-});
-
 gulp.task('scripts', function(callback){
   var output=[];
   var prefix=[
@@ -164,3 +91,60 @@ gulp.task('scripts', function(callback){
 
   fs.writeFile('client/app/js/scripts.js',prefix.concat(output).concat(suffix).join('\n'),callback);
 });
+
+gulp.task('browserify', gulp.series('scripts'), require('./gulptasks/browserify.js')());
+
+gulp.task('browserify-ugly', gulp.series('scripts'), require('./gulptasks/browserify.js')({
+  uglify: true
+}));
+
+gulp.task('watchify', gulp.series('scripts'), require('./gulptasks/browserify.js')({
+  watch: true
+}));
+
+gulp.task('watch', function(done){
+  gulp.watch("./client/app/sass/**.scss", gulp.series('sass'));
+  done();
+});
+
+function callback(err,msg){
+  if(err) throw err;
+}
+
+gulp.task('run', gulp.series(
+    'copy',
+    'sass',
+    'watch',
+    'watchify',
+    'browserSync'
+));
+
+gulp.task('default', gulp.series('run'));
+
+gulp.task('dist', function(){
+   var streams=[];
+   streams.push(gulp.src('./client/app/index.html')
+   .pipe(gulp.dest('./dist/')));
+   streams.push(gulp.src('./client/app/views/*')
+   .pipe(gulp.dest('./dist/views/')));
+   streams.push(gulp.src('./client/app/js/index.min.*')
+   .pipe(gulp.dest('./dist/js/')));
+   streams.push(gulp.src('./client/app/css/bundle.*')
+   .pipe(gulp.dest('./dist/css/')));
+   return merge.apply(null,streams);
+});
+
+gulp.task('build', gulp.series(
+    'copy',
+    'sass',
+    'browserify',
+    'dist'
+));
+
+gulp.task('build-ugly', gulp.series(
+    'copy',
+    'sass',
+    'browserify-ugly',
+    'dist'
+));
+
