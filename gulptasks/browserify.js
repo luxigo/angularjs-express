@@ -138,10 +138,6 @@ module.exports=function(options){
     });
   }
 
-  return function(callback) {
-    options=options||{};
-    options.callback=callback||function(){};
-    return compile(options)
-  }
+  return compile(options)
 
 }
