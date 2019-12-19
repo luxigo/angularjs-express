@@ -40,7 +40,6 @@ $('title').text(config.appName);
 require('../css/bootstrap.min.css');
 require('../css/main.css');
 
-require('popper.js');
 require('bootstrap');
 require('@uirouter/angularjs/release/angular-ui-router.js');
 require('angular-ui-bootstrap');
