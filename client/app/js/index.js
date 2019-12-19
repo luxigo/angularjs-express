@@ -22,12 +22,6 @@
 
 'use strict';
 
-// force https... could use meta
-if (window.location.protocol!='https:') {
-  var href=window.location.href.replace(/[^:]+/,'https');
-  window.location.assign(href);
-}
-
 var angular=require('angular');
 window.jQuery=window.$=require('jquery');
 
@@ -37,17 +31,16 @@ $('html').attr('ng-app',config.appName);
 $('title').text(config.appName);
 
 // TODO: (?) generate the code below from ../../../gulpfile.js using ../../../config.json and directories content.
-require('../css/bootstrap.min.css');
 require('../css/main.css');
 
-require('popper.js');
-require('bootstrap');
 require('@uirouter/angularjs/release/angular-ui-router.js');
-require('angular-ui-bootstrap');
+require('angular-material');
+require('angular-messages');
 
 var app=angular.module(config.appName,[
   'ui.router',
-  'ui.bootstrap'
+  'ngMaterial',
+  'ngMessages'
 ])
 
 angular.module(config.appName)
